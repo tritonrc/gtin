@@ -1,0 +1,1 @@
+require 'ean/ean'

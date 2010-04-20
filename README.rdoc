@@ -1,6 +1,6 @@
 = ean
 
-Description goes here.
+Routines for validating UPC (UPC-E and UPC-A) and EAN (EAN-13) barcodes
 
 == Note on Patches/Pull Requests
  
@@ -14,4 +14,4 @@ Description goes here.
 
 == Copyright
 
-Copyright (c) 2010 Brian Ledbetter. See LICENSE for details.
+Copyright (c) 2010 Brian McKinney (tritonrc). See LICENSE for details.
