@@ -16,7 +16,7 @@ module EAN
 
     def expand(code)
       case code.length
-        when 6,8 then '0' + self.expand_upc_e(code)
+        when 6,8 then '0' + expand_upc_e(code)
         when 12 then '0' + code
         when 13 then code
         else raise ArgumentError, 'EAN/UPC must be 6,8,12 or 13 digits long'
@@ -27,12 +27,12 @@ module EAN
       raise ArgumentError, 'UPC-E must be 6 or 8 digits long' unless [6,8].include?(ean.length)
       ean = ean[1..6] if ean.length == 8
       case ean[-1..-1].to_i
-        when 0 then self.append_check_digit("0#{ean[0..1]}00000#{ean[2..4]}")
-        when 1 then self.append_check_digit("0#{ean[0..1]}10000#{ean[2..4]}")
-        when 2 then self.append_check_digit("0#{ean[0..1]}20000#{ean[2..4]}")
-        when 3 then self.append_check_digit("0#{ean[0..2]}00000#{ean[3..4]}")
-        when 4 then self.append_check_digit("0#{ean[0..3]}00000#{ean[4]}")
-        when 5..9 then self.append_check_digit("0#{ean[0..4]}0000#{ean[-1]}")
+        when 0 then append_check_digit("0#{ean[0..1]}00000#{ean[2..4]}")
+        when 1 then append_check_digit("0#{ean[0..1]}10000#{ean[2..4]}")
+        when 2 then append_check_digit("0#{ean[0..1]}20000#{ean[2..4]}")
+        when 3 then append_check_digit("0#{ean[0..2]}00000#{ean[3..4]}")
+        when 4 then append_check_digit("0#{ean[0..3]}00000#{ean[4]}")
+        when 5..9 then append_check_digit("0#{ean[0..4]}0000#{ean[-1]}")
       end
     end
 
@@ -45,7 +45,7 @@ module EAN
     end
 
     def append_check_digit(ean)
-      "#{ean}#{self.compute_check_digit(ean)}"
+      "#{ean}#{compute_check_digit(ean)}"
     end
 
     def to_upc(ean)
@@ -55,8 +55,13 @@ module EAN
     end
 
     def validate_and_expand(code)
-      return nil unless self.valid?(code)
+      return nil unless valid?(code)
       expand(code)
+    end
+
+    private
+    def append_check_digit(ean)
+      "#{ean}#{compute_check_digit(ean)}"
     end
   end
 end
