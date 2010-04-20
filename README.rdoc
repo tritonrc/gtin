@@ -1,6 +1,8 @@
 = ean
 
-Routines for validating UPC (UPC-E and UPC-A) and EAN (EAN-13) barcodes
+Routines for validating UPC (UPC-E and UPC-A) and EAN (EAN-13) barcodes.
+This gem also provides routines for mapping EANs to countries and for
+determining whether the EAN is a product, coupon, refund, etc...
 
 == Note on Patches/Pull Requests
  

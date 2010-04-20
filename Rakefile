@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "ean"
-    gem.summary = %Q{EAN/UPC barcode routines}
-    gem.description = %Q{Routines for validating UPC (UPC-E and UPC-A) and EAN (EAN-13) barcodes}
+    gem.summary = %Q{EAN/UPC barcode plus GS1 prefix routines}
+    gem.description = %Q{Routines for validating UPC (UPC-E and UPC-A) and EAN (EAN-13) barcodes along with routines for GS1 prefix information}
     gem.email = "brian@realitycontainment.com"
     gem.homepage = "http://github.com/tritonrc/ean"
     gem.authors = ["Brian McKinney"]
