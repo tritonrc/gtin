@@ -5,11 +5,11 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "ean"
-    gem.summary = %Q{EAN/UPC}
-    gem.description = %Q{TODO: longer description of your gem}
-    gem.email = "brianl@nearestisland.com"
+    gem.summary = %Q{EAN/UPC barcode routines}
+    gem.description = %Q{Routines for validating UPC (UPC-E and UPC-A) and EAN (EAN-13) barcodes}
+    gem.email = "brian@realitycontainment.com"
     gem.homepage = "http://github.com/tritonrc/ean"
-    gem.authors = ["Brian Ledbetter"]
+    gem.authors = ["Brian McKinney"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
