@@ -15,7 +15,7 @@ module EAN
 
     def expand(code)
       case code.length
-        when 6,8 then '0' + expand_upc_e(code)
+        when 8 then '0' + expand_upc_e(code)
         when 12 then '0' + code
         when 13 then code
         else raise ArgumentError, 'EAN/UPC must be 6,8,12 or 13 digits long'
@@ -23,8 +23,8 @@ module EAN
     end
 
     def expand_upc_e(ean)
-      raise ArgumentError, 'UPC-E must be 6 or 8 digits long' unless [6,8].include?(ean.length)
-      ean = ean[1..6] if ean.length == 8
+      raise ArgumentError, 'UPC-E must be 8 digits long' unless ean.length == 8
+      ean = ean[1..6]
       case ean[-1..-1].to_i
         when 0 then append_check_digit("0#{ean[0..1]}00000#{ean[2..4]}")
         when 1 then append_check_digit("0#{ean[0..1]}10000#{ean[2..4]}")
