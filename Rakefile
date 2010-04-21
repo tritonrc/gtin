@@ -4,11 +4,11 @@ require 'rake'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "ean"
+    gem.name = "gtin"
     gem.summary = %Q{EAN/UPC barcode plus GS1 prefix routines}
-    gem.description = %Q{Routines for validating UPC (UPC-E and UPC-A) and EAN (EAN-13) barcodes along with routines for GS1 prefix information}
+    gem.description = %Q{Routines for validating UPC (A and E) and EAN (EAN-13) barcodes along with routines for GS1 prefix information}
     gem.email = "brian@realitycontainment.com"
-    gem.homepage = "http://github.com/tritonrc/ean"
+    gem.homepage = "http://github.com/tritonrc/gtin"
     gem.authors = ["Brian McKinney"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
@@ -39,7 +39,7 @@ Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "ean #{version}"
+  rdoc.title = "gtin #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end

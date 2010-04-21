@@ -1,11 +1,10 @@
 module EAN
-  MIN_GS1_PREFIX_LENGTH = 7
-  MAX_GS1_PREFIX_LENGTH = 9
-  NUMERIC_REGEX = %r{[^0-9]{8,13}}.freeze
-  ODDS = [0,2,4,6,8,10,12,14,16].freeze
-  EVENS = [1,3,5,7,9,11,13,15].freeze
+  NUMERIC_REGEX = %r{[^0-9]{8,14}}.freeze
+  EVENS, ODDS = *(0.upto(16).partition { |i| (i & 1) == 1}.map { |a| a.freeze })
 
   class << self
+    # Determines whether the given code is a valid UPC-E, UPC-A, EAN-13 or
+    # EAN-14
     def valid?(code)
       return false unless code.is_a?(String)
       return false unless [8,12,13].include?(code.length)
@@ -13,68 +12,62 @@ module EAN
       compute_check_digit(code[0..-2]) == code[-1..-1].to_i
     end
 
+    # Expands the given code to an EAN-13
     def expand(code)
       case code.length
         when 8 then '0' + expand_upc_e(code)
         when 12 then '0' + code
         when 13 then code
-        else raise ArgumentError, 'EAN/UPC must be 6,8,12 or 13 digits long'
+        else raise ArgumentError, 'EAN/UPC must be 8, 12 or 13 digits long'
       end
     end
 
-    def expand_upc_e(ean)
-      raise ArgumentError, 'UPC-E must be 8 digits long' unless ean.length == 8
-      ean = ean[1..6]
-      case ean[-1..-1].to_i
-        when 0 then append_check_digit("0#{ean[0..1]}00000#{ean[2..4]}")
-        when 1 then append_check_digit("0#{ean[0..1]}10000#{ean[2..4]}")
-        when 2 then append_check_digit("0#{ean[0..1]}20000#{ean[2..4]}")
-        when 3 then append_check_digit("0#{ean[0..2]}00000#{ean[3..4]}")
-        when 4 then append_check_digit("0#{ean[0..3]}00000#{ean[4]}")
-        when 5..9 then append_check_digit("0#{ean[0..4]}0000#{ean[-1]}")
+    # Expands an eight digit UPC-E to a twelve digit UPC-A
+    def expand_upc_e(upc)
+      raise ArgumentError, 'UPC-E must be 8 digits long' unless upc.length == 8
+      upc = upc[1..6]
+      case upc[-1..-1].to_i
+        when 0 then append_check_digit("0#{upc[0..1]}00000#{upc[2..4]}")
+        when 1 then append_check_digit("0#{upc[0..1]}10000#{upc[2..4]}")
+        when 2 then append_check_digit("0#{upc[0..1]}20000#{upc[2..4]}")
+        when 3 then append_check_digit("0#{upc[0..2]}00000#{upc[3..4]}")
+        when 4 then append_check_digit("0#{upc[0..3]}00000#{upc[4]}")
+        when 5..9 then append_check_digit("0#{upc[0..4]}0000#{upc[-1]}")
       end
     end
 
-    def compute_check_digit(ean)
-      return compute_check_digit_upc(ean) if ean.length < 12
-      return compute_check_digit_upc(ean[1..-1]) if ean[0..1] == '00'
-      compute_check_digit_ean(ean)
-    end
+    # Given a code without a check-digit, computes the check-digit
+    def compute_check_digit(code, symbology=:ean)
+      if code.length < 12
+        symbology = :upc
+      elsif code[0..1] == '00'
+        code = code[1..-1]
+        symbology = :upc
+      end
 
-    def compute_check_digit_ean(ean)
-      eands = ean.split('').map { |d| d.to_i }
-      evens = eands.values_at(*EVENS).compact
-      odds = eands.values_at(*ODDS).compact
+      digits = code.split('').map { |d| d.to_i }
+      evens = digits.values_at(*(symbology == :ean ? EVENS : ODDS)).compact
+      odds = digits.values_at(*(symbology == :ean ? ODDS : EVENS)).compact
       result = (evens.inject { |sum, n| sum + n } * 3 + odds.inject { |sum, n| sum + n }).modulo(10)
       result.zero? ? 0 : (10 - result)
     end
 
-    def compute_check_digit_upc(upc)
-      upcds = upc.split('').map { |d| d.to_i }
-      evens = upcds.values_at(*EVENS).compact
-      odds = upcds.values_at(*ODDS).compact
-      result = (odds.inject { |sum, n| sum + n } * 3 + evens.inject { |sum, n| sum + n }).modulo(10)
-      result.zero? ? 0 : (10 - result)
-    end
-
-    def append_check_digit(ean)
-      "#{ean}#{compute_check_digit(ean)}"
-    end
-
+    # Shrinks a US prefixed EAN-13 to UPC-A
     def to_upc(ean)
       return ean if ean.length != 13
       return ean unless ean[0..1] == '00'
       return ean[1..-1]
     end
 
+    # Validates the given code and then expands it to an EAN-13
     def validate_and_expand(code)
       return nil unless valid?(code)
       expand(code)
     end
 
     private
-    def append_check_digit(ean)
-      "#{ean}#{compute_check_digit(ean)}"
+    def append_check_digit(body)
+      "#{body}#{compute_check_digit(body)}"
     end
   end
 end
