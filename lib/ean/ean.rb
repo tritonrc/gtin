@@ -2,15 +2,14 @@ module EAN
   MIN_GS1_PREFIX_LENGTH = 7
   MAX_GS1_PREFIX_LENGTH = 9
   NUMERIC_REGEX = %r{[^0-9]{8,13}}.freeze
-  EVENS = [0,2,4,6,8,10].freeze
-  ODDS = [1,3,5,7,9].freeze
+  ODDS = [0,2,4,6,8,10,12,14,16].freeze
+  EVENS = [1,3,5,7,9,11,13,15].freeze
 
   class << self
     def valid?(code)
       return false unless code.is_a?(String)
       return false unless [8,12,13].include?(code.length)
       return false unless NUMERIC_REGEX.match(code).nil?
-      code = self.to_upc(code)
       compute_check_digit(code[0..-2]) == code[-1..-1].to_i
     end
 
@@ -37,10 +36,24 @@ module EAN
     end
 
     def compute_check_digit(ean)
+      return compute_check_digit_upc(ean) if ean.length < 12
+      return compute_check_digit_upc(ean[1..-1]) if ean[0..1] == '00'
+      compute_check_digit_ean(ean)
+    end
+
+    def compute_check_digit_ean(ean)
       eands = ean.split('').map { |d| d.to_i }
       evens = eands.values_at(*EVENS).compact
       odds = eands.values_at(*ODDS).compact
       result = (evens.inject { |sum, n| sum + n } * 3 + odds.inject { |sum, n| sum + n }).modulo(10)
+      result.zero? ? 0 : (10 - result)
+    end
+
+    def compute_check_digit_upc(upc)
+      upcds = upc.split('').map { |d| d.to_i }
+      evens = upcds.values_at(*EVENS).compact
+      odds = upcds.values_at(*ODDS).compact
+      result = (odds.inject { |sum, n| sum + n } * 3 + evens.inject { |sum, n| sum + n }).modulo(10)
       result.zero? ? 0 : (10 - result)
     end
 
@@ -50,8 +63,8 @@ module EAN
 
     def to_upc(ean)
       return ean if ean.length != 13
-      return ean unless ean[0..0] == '0'
-      return ean[1..12]
+      return ean unless ean[0..1] == '00'
+      return ean[1..-1]
     end
 
     def validate_and_expand(code)
