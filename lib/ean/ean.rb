@@ -65,7 +65,6 @@ module EAN
       expand(code)
     end
 
-    private
     def append_check_digit(body)
       "#{body}#{compute_check_digit(body)}"
     end
