@@ -1,28 +1,43 @@
-module EAN
+module GTIN
   NUMERIC_REGEX = %r{[^0-9]{8,14}}.freeze
   EVENS, ODDS = *(0.upto(16).partition { |i| (i & 1) == 1}.map { |a| a.freeze })
 
   class << self
     # Determines whether the given code is a valid UPC-E, UPC-A, EAN-13 or
-    # EAN-14
+    # GTIN-14
     def valid?(code)
       return false unless code.is_a?(String)
-      return false unless [8,12,13].include?(code.length)
+      return false unless [8,12,13,14].include?(code.length)
       return false unless NUMERIC_REGEX.match(code).nil?
       compute_check_digit(code[0..-2]) == code[-1..-1].to_i
     end
 
-    # Expands the given code to an EAN-13
-    def expand(code)
-      case code.length
+    # Expands the given code to an EAN-13 or GTIN-14
+    # This function will not shink a given code
+    def expand(code, size = 13)
+      length = code.length
+      return code if length == 14
+      ean13 = case length
         when 8 then '0' + expand_upc_e(code)
         when 12 then '0' + code
         when 13 then code
-        else raise ArgumentError, 'EAN/UPC must be 8, 12 or 13 digits long'
       end
+      (size == 14) ? ('0' + ean13) : ean13
     end
 
-    # Expands an eight digit UPC-E to a twelve digit UPC-A
+    # Expands the given code to an EAN-13
+    def to_gtin_13(code)
+      expand(code, 13)
+    end
+    alias :to_ean :to_gtin_13
+
+    # Expands the given code to a GTIN-14
+    def to_gtin_14(code)
+      expand(code, 14)
+    end
+    alias :to_gtin :to_gtin_14
+
+    # Expands an eight-digit UPC-E to a twelve-digit UPC-A
     def expand_upc_e(upc)
       raise ArgumentError, 'UPC-E must be 8 digits long' unless upc.length == 8
       upc = upc[1..6]
@@ -37,10 +52,12 @@ module EAN
     end
 
     # Given a code without a check-digit, computes the check-digit
-    def compute_check_digit(code, symbology=:ean)
-      if code.length < 12
+    def compute_check_digit(code, symbology = :ean)
+      length = code.length
+      leader = length - 12
+      if length < 12
         symbology = :upc
-      elsif code[0..1] == '00'
+      elsif code[0..leader] == '0' * (leader + 1)
         code = code[1..-1]
         symbology = :upc
       end
@@ -52,17 +69,13 @@ module EAN
       result.zero? ? 0 : (10 - result)
     end
 
-    # Shrinks a US prefixed EAN-13 to UPC-A
-    def to_upc(ean)
-      return ean if ean.length != 13
-      return ean unless ean[0..1] == '00'
-      return ean[1..-1]
-    end
-
-    # Validates the given code and then expands it to an EAN-13
-    def validate_and_expand(code)
-      return nil unless valid?(code)
-      expand(code)
+    # Shrinks a US prefixed EAN-13 or GTIN-14 to UPC-A
+    def to_upc(gtin)
+      length = gtin.length
+      return gtin unless [13, 14].include?(length)
+      leader_size = length - 12
+      return gtin unless gtin[0..leader_size] == '0' * (leader_size + 1)
+      gtin[leader_size..-1]
     end
 
     def append_check_digit(body)
